@@ -1,0 +1,66 @@
+{
+  "name": "anything-llm",
+  "displayName": "Anything-LLM",
+  "description": "Integrates anything-llm with local access to Chat Bot, RAG and code completion features on VSCode.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onCommand:anything-llm.openChat"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "AnythingLLM Extension Settings",
+      "properties": {
+        "anythingLLM.apiBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:3001/api",
+          "description": "Base URL of your AnythingLLM instance"
+        },
+        "anythingLLM.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for your AnythingLLM instance"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "anything-llm.openChat",
+        "title": "Open AnythingLLM Chat Viewer"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src",
+    "pretest": "npm run compile && npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.100.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mehrdad-zade/vsc-plugin-anythingllm.git"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}

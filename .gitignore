@@ -1,0 +1,15 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+
+# Logs
+*.log
+
+# Local dev configs or secrets
+.env
+*.env.local
+
+# OS-specific
+.DS_Store
