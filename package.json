@@ -1,16 +1,20 @@
 {
   "name": "anything-llm",
-  "displayName": "Anything-LLM",
-  "description": "Integrates anything-llm with local access to Chat Bot, RAG and code completion features on VSCode.",
-  "version": "1.2.0",
+  "displayName": "Anything LLM",
+  "description": "Integrates anything-llm with VSCode to provide a localized experience of Chat, RAG and Agentic-AI to replace Copilot.",
+  "version": "1.4.0",
   "publisher": "MehrdadAlemzadeh",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": ">=1.70.0"
   },
-  "categories": ["Other"],
-  "activationEvents": [
-    "onCommand:anything-llm.openChat"
+  "categories": [
+    "Other"
   ],
+  "activationEvents": [
+    "onCommand:anything-llm.openChat",
+    "onView:anythingLLMView"
+  ],
+  "icon": "media/logo.png",
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
@@ -35,7 +39,24 @@
         "command": "anything-llm.openChat",
         "title": "Open AnythingLLM Chat Viewer"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "anythingLLM",
+          "title": "AnythingLLM",
+          "icon": "media/logo.png"
+        }
+      ]
+    },
+    "views": {
+      "anythingLLM": [
+        {
+          "id": "anythingLLMView",
+          "name": "Chat Panel"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -47,18 +68,19 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.100.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.70.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
-    "eslint": "^9.25.1",
-    "typescript": "^5.8.3",
-    "ts-loader": "^9.5.2",
-    "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "copy-webpack-plugin": "^13.0.0",
+    "eslint": "^9.25.1",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1"
   },
   "repository": {
     "type": "git",

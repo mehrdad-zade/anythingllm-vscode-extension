@@ -50,6 +50,7 @@ Set the following fields:
 - Visualize all local workspaces and threads from AnythingLLM
 - View and scroll chat history with proper formatting and syntax highlighting
 - Responsive and clean user interface
+- to use agentic mode, configure your agent in anythingllm local application and call the agent in your threads with: @agent (anythingllm hasn't made agents available through APIs yet)
 - Supports dark/light themes
 
 ---

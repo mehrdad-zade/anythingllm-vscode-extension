@@ -8,10 +8,13 @@ All notable changes to the "anything-llm" extension will be documented in this f
 - Auto-refresh logic for threads and chats
 - VS Code theme-aware styling
 - API key + base URL via settings
+- notification for version updates
 
 ### Fixed
 - Message rendering and refresh bugs
 - Input UI conflicts while renaming
+- logo
+- version compatibility
 
 
 ## [Unreleased]
