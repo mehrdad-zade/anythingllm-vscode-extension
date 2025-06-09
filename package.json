@@ -2,7 +2,8 @@
   "name": "anything-llm",
   "displayName": "Anything-LLM",
   "description": "Integrates anything-llm with local access to Chat Bot, RAG and code completion features on VSCode.",
-  "version": "0.0.1",
+  "version": "1.2.0",
+  "publisher": "MehrdadAlemzadeh",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -15,6 +16,7 @@
     "configuration": {
       "type": "object",
       "title": "AnythingLLM Extension Settings",
+      "scope": "application",
       "properties": {
         "anythingLLM.apiBaseUrl": {
           "type": "string",

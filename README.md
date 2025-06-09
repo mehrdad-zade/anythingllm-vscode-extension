@@ -2,7 +2,7 @@
 
 This extension integrates a locally installed [AnythingLLM](https://anythingllm.com/desktop) instance with Visual Studio Code. It offers a lightweight and secure alternative to cloud-based assistants like GitHub Copilot.
 
-The benifit of using this is to save $$ on a chat-bot like ChatGPT's paid version, as well as GitHub Copilot subscription fees and pay as-you-go.
+The benefit of using this is to save $$ on a chat-bot like ChatGPT's paid version, as well as GitHub Copilot subscription fees and pay as-you-go.
 
 ---
 
@@ -61,11 +61,18 @@ Set the following fields:
 
 ---
 
+## New version changes:
+
+### Workspaces & Thread Management
+✅ Support for creating/deleting workspaces and threads.
+✅ T+ button added for creating threads directly from UI.
+✅ Thread rename and delete options via contextual menu (⋮).
+
 ## 🧪 Development
 
 For contributors:
 
-1. Clone the repo
+1. Clone the repo: https://github.com/mehrdad-zade/anythingllm-vscode-extension
 2. Run `npm install`
 3. Launch VS Code Extension host with F5
 4. Make sure AnythingLLM is running locally on `http://localhost:3001/api`
