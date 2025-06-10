@@ -3,17 +3,19 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 class AnythingLLMViewProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(private readonly context: vscode.ExtensionContext) {
+    console.log('AnythingLLMViewProvider constructor called.');
+  }
 
   resolveWebviewView(webviewView: vscode.WebviewView) {
+    console.log('AnythingLLMViewProvider: resolveWebviewView CALLED.');
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'dist', 'media'))]
+    };
     const config = vscode.workspace.getConfiguration('anythingLLM');
     const apiBaseUrl = config.get<string>('apiBaseUrl') || '';
     const apiKey = config.get<string>('apiKey') || '';
-
-    webviewView.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))]
-    };
 
     const htmlPath = path.join(this.context.extensionPath, 'dist', 'media', 'chat-ui.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
@@ -22,10 +24,13 @@ class AnythingLLMViewProvider implements vscode.WebviewViewProvider {
       .replace('API_KEY_PLACEHOLDER', apiKey);
 
     webviewView.webview.html = html;
+    console.log('AnythingLLMViewProvider: resolveWebviewView FINISHED (full HTML).');
   }
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log('AnythingLLM extension activating...'); 
+
   const currVersion = vscode.extensions.getExtension('MehrdadAlemzadeh.anything-llm')?.packageJSON.version;
   const prevVersion = context.globalState.get<string>('extensionVersion');
 
@@ -49,10 +54,20 @@ export function activate(context: vscode.ExtensionContext) {
     context.globalState.update('extensionVersion', currVersion);
   }
 
+  console.log('Registering AnythingLLMViewProvider...'); 
   const viewProvider = new AnythingLLMViewProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('anythingLLMView', viewProvider)
-  );
+  console.log('AnythingLLMViewProvider instance created.');
+  const registration = vscode.window.registerWebviewViewProvider('anythingLLMView', viewProvider);
+  console.log('View provider registration call completed.');
+  context.subscriptions.push(registration);
+  console.log('AnythingLLMViewProvider pushed to subscriptions.');
+
+  // Attempt to focus the view programmatically
+  // vscode.commands.executeCommand('anythingLLMView.focus').then(() => {
+  //   console.log('Command anythingLLMView.focus executed successfully.');
+  // }, (err) => {
+  //   console.error('Command anythingLLMView.focus failed:', err);
+  // });
 
   const disposable = vscode.commands.registerCommand('anything-llm.openChat', () => {
     const panel = vscode.window.createWebviewPanel(
@@ -62,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
       {
         enableScripts: true,
         localResourceRoots: [
-          vscode.Uri.file(path.join(context.extensionPath, 'media'))
+          vscode.Uri.file(path.join(context.extensionPath, 'dist', 'media'))
         ]
       }
     );
@@ -71,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
     const apiBaseUrl = config.get<string>('apiBaseUrl') || '';
     const apiKey = config.get<string>('apiKey') || '';
 
-    const htmlPath = path.join(context.extensionPath, 'media', 'chat-ui.html');
+    const htmlPath = path.join(context.extensionPath, 'dist', 'media', 'chat-ui.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
     html = html
       .replace('API_URL_PLACEHOLDER', apiBaseUrl)
@@ -81,6 +96,9 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+  console.log('AnythingLLM extension activation complete.');
 }
 
-export function deactivate() {}
+export function deactivate() {
+  console.log('AnythingLLM extension deactivating...'); 
+}

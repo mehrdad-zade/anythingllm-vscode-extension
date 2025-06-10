@@ -2,7 +2,7 @@
   "name": "anything-llm",
   "displayName": "Anything LLM",
   "description": "Integrates anything-llm with VSCode to provide a localized experience of Chat, RAG and Agentic-AI to replace Copilot.",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "publisher": "MehrdadAlemzadeh",
   "engines": {
     "vscode": ">=1.70.0"
@@ -14,7 +14,6 @@
     "onCommand:anything-llm.openChat",
     "onView:anythingLLMView"
   ],
-  "icon": "media/logo.png",
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
@@ -45,7 +44,7 @@
         {
           "id": "anythingLLM",
           "title": "AnythingLLM",
-          "icon": "media/logo.png"
+          "icon": "$(code)"
         }
       ]
     },
@@ -53,7 +52,8 @@
       "anythingLLM": [
         {
           "id": "anythingLLMView",
-          "name": "Chat Panel"
+          "name": "Chat Panel",
+          "type": "webview"
         }
       ]
     }

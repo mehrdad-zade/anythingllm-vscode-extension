@@ -9,12 +9,14 @@ All notable changes to the "anything-llm" extension will be documented in this f
 - VS Code theme-aware styling
 - API key + base URL via settings
 - notification for version updates
+- added icon to the sidebar
 
 ### Fixed
 - Message rendering and refresh bugs
 - Input UI conflicts while renaming
 - logo
 - version compatibility
+- ux design
 
 
 ## [Unreleased]

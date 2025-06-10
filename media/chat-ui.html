@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="light dark" />
   <title>AnythingLLM Chat Viewer</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -35,15 +35,114 @@
       width: 280px;
       border-right: 1px solid #ddd;
       overflow-y: auto;
-      padding: 1rem;
       background: var(--vscode-sideBar-background, #f9f9f9);
+      transition: width 0.3s ease, padding 0.3s ease;
+      padding: 1rem; /* Default padding for expanded state */
+      display: flex; /* Use flexbox */
+      flex-direction: column; /* Stack icon group and main content ALWAYS */
+      align-items: stretch;   /* Stretch children to full width ALWAYS */
+    }
+
+    #threads.collapsed {
+      width: 40px; /* Minimal width */
+      padding: 0.5rem; /* Minimal padding */
+      overflow: hidden;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* New: Container for header icons */
+    #threads-header-icons {
+      display: flex;
+      flex-direction: row; /* Icons side-by-side */
+      align-items: center; /* Vertically center icons with each other */
+      /* margin-right: 0.5rem; REMOVED */
+      /* padding-top: 0.2rem; REMOVED */
+      margin-bottom: 0.5rem; /* Space below icons, before the form */
+    }
+
+    #collapse-threads-btn,
+    #settings-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px; /* Consistent icon size */
+      padding: 0.2rem; /* Add some padding for easier clicking */
+      color: var(--vscode-editor-foreground, #000);
+      line-height: 1; /* Ensure consistent height */
+    }
+
+    #settings-icon {
+      margin-left: 0.3rem; /* Space between collapse and settings icon */
+    }
+
+    #threads.collapsed #threads-header-icons {
+      /* When collapsed, the header icons div itself will be centered by #threads.
+         It should take minimal space and center its only visible child (collapse button) */
+      margin-right: 0;
+      padding-top: 0;
+      width: 100%; /* Fill the 40px width */
+      justify-content: center; /* Center the collapse button */
+      margin-bottom: 0; /* ADDED: No margin below when collapsed */
+    }
+
+    #threads.collapsed #settings-icon {
+      display: none; /* Hide settings icon when panel is collapsed */
+    }
+
+    #threads-main-content {
+      flex-grow: 1; /* Takes up remaining horizontal space */
+      display: flex;
+      flex-direction: column;
+      min-width: 0; /* Important for flex children */
+      height: 100%; /* Ensure it takes full available height within #threads */
+    }
+
+    #threads.collapsed #threads-main-content {
+      display: none;
+    }
+
+    #workspace-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      align-items: center; /* Vertically align input and button */
+      width: 100%;
+    }
+
+    #workspace-name {
+      flex: 1; /* Input takes available space */
+      padding: 0.4rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      min-width: 80px; /* Ensure it doesn't get too small */
+    }
+
+    #create-workspace-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      flex-shrink: 0; /* Prevent button from shrinking */
+    }
+    
+    #workspace-list {
+      flex-grow: 1; /* Takes up remaining vertical space in #threads-main-content */
+      overflow-y: auto;
+      min-height: 50px; /* Ensure it's visible even if empty initially */
     }
 
     #chat {
       flex: 1;
       overflow-y: auto;
       padding: 1rem;
-      padding-bottom: 90px;
+      padding-bottom: 90px; /* Ensure space for the input container */
+      min-height: 0; /* Added in a previous step, ensure it's there if #app is flex column */
     }
 
     .message {
@@ -53,17 +152,19 @@
     }
 
     .user {
-      background-color: var(--vscode-editorWidget-background, #e0f3ff);
-      border: 1px solid var(--vscode-editorWidget-border, #cce5ff);
-      border-radius: 999px;
-      padding: 1rem;
+      background-color: transparent;
+      /* Remove background color */
+      border: none;
+      /* Remove border */
+      color: var(--vscode-terminal-ansiBlue, #007acc);
+      /* Set to a readable blue color */
+      padding: 0;
+      /* Remove padding */
     }
 
     .user::before {
-      content: "🧑 You";
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.3rem;
+      content: "";
+      /* Remove the "🧑 You" label */
     }
 
     .assistant {
@@ -83,13 +184,18 @@
     }
 
     .message-content code {
-      font-family: monospace;
+      font-family: 'Courier New', Courier, monospace;
       border-radius: 6px;
-      background: #282c34;
-      color: #f8f8f2;
+      background: var(--vscode-editor-background, #282c34);
+      /* Use theme background */
+      color: var(--vscode-terminal-ansiWhite, #f8f8f2);
       padding: 0.6rem;
       display: block;
       overflow-x: auto;
+      margin: 0.5rem 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
     .thread {
@@ -162,8 +268,9 @@
       background: var(--vscode-editorWidget-background, #f0f0f0);
       position: absolute;
       bottom: 0;
-      left: 280px;
+      left: 280px; /* Default left position */
       right: 0;
+      transition: left 0.3s ease; /* Added transition */
     }
 
     #user-input {
@@ -192,14 +299,17 @@
       display: flex;
       gap: 0.5rem;
       margin-bottom: 1rem;
+      align-items: center; /* Vertically align input and button */
+      width: 100%;
     }
 
     #workspace-name {
-      flex: 1;
+      flex: 1; /* Input takes available space */
       padding: 0.4rem;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      min-width: 80px; /* Ensure it doesn't get too small */
     }
 
     #create-workspace-btn {
@@ -210,26 +320,88 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      flex-shrink: 0; /* Prevent button from shrinking */
     }
 
-    #create-workspace-btn:hover {
-      background: #1f7a33;
+    /* Styles for the overlay */
+    .overlay {
+      position: fixed;
+      top: 0; /* MODIFIED */
+      left: 0; /* MODIFIED */
+      width: 100%; /* MODIFIED */
+      height: 100%; /* MODIFIED */
+      background-color: transparent; /* REMOVED semi-transparent background */
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
     }
 
-    @media screen and (max-width: 768px) {
-      #app {
-        flex-direction: column;
-      }
+    .overlay-content {
+      background-color: var(--vscode-sideBar-background, #fff);
+      color: var(--vscode-editor-foreground, #000);
+      padding: 1rem; /* MODIFIED - Reduced padding */
+      border-radius: 8px;
+      position: relative;
+      width: auto; /* MODIFIED - Let content define width */
+      min-width: 300px; /* ADDED - Minimum width */
+      max-width: 90%; /* MODIFIED - Max width relative to viewport */
+      max-height: auto; /* MODIFIED - Let content define height */
+      min-height: 200px; /* ADDED - Minimum height */
+      overflow-y: auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* ADDED - A bit more shadow */
+    }
 
-      #threads {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
+    .overlay-content .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--vscode-editor-foreground, #000);
+    }
 
-      #input-container {
-        left: 0;
-      }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--vscode-editorWidget-border, #ccc);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--vscode-editor-foreground, #000);
+    }
+
+    .tab.active {
+      border-color: #007acc;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+      color: var(--vscode-editor-foreground, #000);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .instruction-box {
+      margin-bottom: 1rem;
+    }
+
+    .instruction-box textarea {
+      width: 100%;
+      min-height: 20px;
+      max-height: 200px;
+      resize: none;
+      overflow: hidden;
+      border: 1px solid var(--vscode-editorWidget-border, #ccc);
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 1rem;
     }
   </style>
 </head>
@@ -237,16 +409,41 @@
 <body>
   <div id="app">
     <div id="threads">
-      <form id="workspace-form" onsubmit="return false;">
-        <input type="text" id="workspace-name" placeholder="New workspace name" />
-        <button id="create-workspace-btn">Add</button>
-      </form>
-      <div id="workspace-list"><strong>Loading threads...</strong></div>
+      <!-- Icons are now grouped here -->
+      <div id="threads-header-icons">
+        <button id="collapse-threads-btn" title="Collapse Threads">⏪</button>
+        <button id="settings-icon" title="Settings">⚙️</button>
+      </div>
+      <div id="threads-main-content">
+        <form id="workspace-form" onsubmit="return false;">
+          <!-- Settings icon moved out -->
+          <input type="text" id="workspace-name" placeholder="New workspace" />
+          <button id="create-workspace-btn">Add</button>
+        </form>
+        <div id="workspace-list"><strong>Loading threads...</strong></div>
+      </div>
     </div>
     <div id="chat"><em>Select a thread to view chats</em></div>
     <div id="input-container">
       <input type="text" id="user-input" placeholder="Ask Anything..." />
       <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <!-- Overlay for settings -->
+  <div id="settings-overlay" class="overlay">
+    <div class="overlay-content">
+      <span class="close-btn" id="close-overlay">✖</span>
+      <div class="tabs">
+        <div class="tab active" data-tab="settings">Settings</div>
+        <div class="tab" data-tab="instructions">Instructions</div>
+      </div>
+      <div class="tab-content active" id="tab-settings">
+        <p>Settings (To be developed)</p>      </div>
+      <div class="tab-content" id="tab-instructions">
+        <button id="add-instruction" style="cursor:pointer;font-size:16px;">➕ Add Instruction</button>
+        <div id="instructions-container"></div>
+      </div>
     </div>
   </div>
 
@@ -257,6 +454,7 @@
     let currentWorkspace = null;
     let currentThread = null;
     let isRenaming = false;
+    let instructionCounter = 0;
 
     function askConfirm(msg) {
       if (window.top !== window.self || !window.confirm) return Promise.resolve(true);
@@ -373,7 +571,6 @@
         label.textContent = workspace.name.toUpperCase();
         label.style.fontSize = "1.1rem";
         label.style.textTransform = "uppercase";
-
 
         const controls = document.createElement("div");
         controls.style.display = "flex";
@@ -523,13 +720,13 @@
       highlightActiveThread();
     }
 
-
     document.getElementById("create-workspace-btn").onclick = async () => {
-      const rawName = document.getElementById("workspace-name").value.trim();
-      if (!rawName) return;
-
-      const name = rawName.toUpperCase();
-      const newWs = await createWorkspace(name);
+      const newWorkspaceName = document.getElementById("workspace-name").value;
+      if (!newWorkspaceName) {
+        alert("Please enter a name for the new workspace.");
+        return;
+      }
+      const newWs = await createWorkspace(newWorkspaceName);
       if (newWs?.workspace?.slug) {
         const thread = await createThread(newWs.workspace.slug);
         await loadThreads();
@@ -540,7 +737,6 @@
       document.getElementById("workspace-name").value = "";
     };
 
-
     document.getElementById("send-button").onclick = sendPrompt;
 
     document.getElementById("user-input").addEventListener("keydown", (e) => {
@@ -550,7 +746,6 @@
       }
     });
 
-    loadThreads();
     // Refresh workspaces and threads every 5 seconds
     setInterval(() => {
       if (!document.hidden && !isRenaming) {
@@ -565,7 +760,101 @@
       }
     }, 60000);
 
+    // Settings overlay logic
+    const settingsOverlay = document.getElementById('settings-overlay');
+    const settingsIcon = document.getElementById('settings-icon');
+    const closeOverlay = document.getElementById('close-overlay');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const collapseThreadsBtn = document.getElementById('collapse-threads-btn');
+    const threadsPanel = document.getElementById('threads');
+    const inputContainer = document.getElementById('input-container');
 
+    settingsIcon.addEventListener('click', () => {
+      settingsOverlay.style.display = 'flex'; // Restore displaying the overlay
+      // console.log("Settings icon clicked - Settings to be developed."); // Remove previous log
+    });
+
+    closeOverlay.addEventListener('click', () => {
+      settingsOverlay.style.display = 'none';
+    });
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.querySelector(`#tab-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // Collapse/Expand Threads Panel & Input Container Adjustment
+    function adjustInputContainerPosition() {
+      const isCollapsed = threadsPanel.classList.contains('collapsed');
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        // On mobile, CSS handles the input container's position with `left: auto !important`.
+        // Clearing any inline style ensures the CSS rule applies.
+        inputContainer.style.left = '';
+      } else {
+        // On desktop, adjust based on panel state.
+        if (isCollapsed) {
+          inputContainer.style.left = '40px'; // Must match #threads.collapsed CSS width
+        } else {
+          inputContainer.style.left = '280px'; // Must match #threads CSS width
+        }
+      }
+    }
+
+    collapseThreadsBtn.addEventListener('click', () => {
+      threadsPanel.classList.toggle('collapsed');
+      const isCollapsed = threadsPanel.classList.contains('collapsed');
+
+      if (isCollapsed) {
+        collapseThreadsBtn.innerHTML = '⏩';
+        collapseThreadsBtn.title = 'Expand Threads';
+      } else {
+        collapseThreadsBtn.innerHTML = '⏪';
+        collapseThreadsBtn.title = 'Collapse Threads';
+      }
+      adjustInputContainerPosition(); // Adjust input container based on new state
+    });
+
+    window.addEventListener('resize', adjustInputContainerPosition);
+
+    // Initial setup
+    document.addEventListener('DOMContentLoaded', () => {
+      loadThreads();
+      adjustInputContainerPosition(); // Set initial position of input container
+    });
+
+    // Instructions tab logic
+    document.getElementById('add-instruction').addEventListener('click', addInstruction);
+
+    function addInstruction() {
+      instructionCounter++;
+      const instructionDiv = document.createElement('div');
+      instructionDiv.className = 'instruction-box';
+
+      const instructionLabel = document.createElement('strong');
+      instructionLabel.textContent = `I${instructionCounter}`;
+      instructionDiv.appendChild(instructionLabel);
+
+      const textarea = document.createElement('textarea');
+      textarea.maxLength = 2000;
+      textarea.placeholder = "Write your instruction here...";
+      textarea.addEventListener('input', autoResizeTextarea);
+      instructionDiv.appendChild(textarea);
+
+      document.getElementById('instructions-container').appendChild(instructionDiv);
+    }
+
+    function autoResizeTextarea() {
+      this.style.height = 'auto';
+      this.style.height = `${this.scrollHeight}px`;
+    }
   </script>
 </body>
 
